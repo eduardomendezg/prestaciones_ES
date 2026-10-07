@@ -422,7 +422,7 @@ function calcularAntiguedad(fechaInicio, fechaFin) {
 
     if (nocturnos === 0) return {tipo:"Diurna", horasDiurnas:total/60, horasNocturnas:0};
     if (diurnos === 0) return {tipo:"Nocturna", horasDiurnas:0, horasNocturnas:total/60};
-    if (nocturnos / 60 > 3) return {tipo:"Mixta → nocturna", horasDiurnas:0, horasNocturnas:total/60};
+    if (nocturnos / 60 > 3.5) return {tipo:"Mixta → nocturna", horasDiurnas:0, horasNocturnas:total/60};
     return {tipo:"Mixta", horasDiurnas:diurnos/60, horasNocturnas:nocturnos/60};
   }
 
