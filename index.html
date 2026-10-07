@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Calculadora de prestaciones económicas de fin de contrato y jornadas especiales - El Salvador">
+  <title>Calculadora Laboral · El Salvador</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- jsPDF + html2canvas se cargan desde CDN únicamente para la exportación PDF. -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <header class="encabezado">
+    <div class="marca">
+      <span class="marca-icono">⚖</span>
+      <div>
+        <strong>Calculadora Laboral</strong>
+        <small>Prestaciones y jornadas especiales · El Salvador</small>
+      </div>
+    </div>
+    <div class="badge-legal">Código de Trabajo · Ley de Renuncia Voluntaria</div>
+  </header>
+
+  <main class="contenedor">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">LIQUIDACIÓN LABORAL</p>
+        <h1>Calcula prestaciones económicas de forma clara y guiada.</h1>
+        <p class="hero-text">Asistente por pasos para estimar indemnización, vacaciones, aguinaldo, asuetos, descanso semanal, horas extras y deducciones.</p>
+      </div>
+    </section>
+
+    <section class="wizard-shell">
+      <nav class="pasos" aria-label="Pasos de la calculadora">
+        <button class="paso activo" data-paso="1"><span>1</span><b>Datos</b></button>
+        <button class="paso" data-paso="2"><span>2</span><b>Causa</b></button>
+        <button class="paso" data-paso="3"><span>3</span><b>Periodo</b></button>
+        <button class="paso" data-paso="4"><span>4</span><b>Jornadas</b></button>
+        <button class="paso" data-paso="5"><span>5</span><b>Prestaciones</b></button>
+        <button class="paso" data-paso="6"><span>6</span><b>Horas extra</b></button>
+        <button class="paso" data-paso="7"><span>7</span><b>Resultado</b></button>
+      </nav>
+
+      <form id="formularioLiquidacion" novalidate>
+        <!-- PASO 1: Datos generales -->
+        <section class="panel paso-panel visible" data-panel="1">
+          <div class="panel-titulo">
+            <div><span class="numero-seccion">01</span><h2>Datos generales</h2><p>La información personal puede mantenerse anónima en el reporte.</p></div>
+            <label class="switch-wrap"><input type="checkbox" id="modoAnonimo"><span class="switch"></span><span>Modo anónimo</span></label>
+          </div>
+
+          <div class="grid-2">
+            <label class="campo"><span>Nombre completo</span><input id="nombreCompleto" type="text" autocomplete="name" placeholder="Ej. Roberto Alfredo Aguilar Bonilla"></label>
+            <label class="campo"><span>DUI <em>00000000-0</em></span><input id="dui" type="text" inputmode="numeric" maxlength="10" placeholder="12345678-9"></label>
+            <label class="campo"><span>Nombre de la empresa / patrono</span><input id="nombreEmpresa" type="text" placeholder="Razón social o nombre comercial"></label>
+            <label class="campo"><span>Cargo desempeñado</span><input id="cargo" type="text" placeholder="Ej. Ingeniero de Software"></label>
+            <label class="campo"><span>Salario mensual ($)</span><input id="salarioMensual" type="number" min="0" step="0.01" placeholder="4000.00"></label>
+            <label class="campo"><span>Sector económico</span>
+              <select id="sectorEconomico">
+                <option value="comercio">Comercio y servicios</option>
+                <option value="industria">Industria</option>
+                <option value="maquila">Maquila textil y confección</option>
+                <option value="agricola">Agrícola</option>
+              </select>
+            </label>
+          </div>
+          <div class="info-box">
+            <strong>Privacidad:</strong> al activar el modo anónimo, nombre y DUI se mostrarán como <b>XXXXXXXXXXXXXXXX</b> en la previsualización y PDF.
+          </div>
+          <div class="acciones"><button type="button" class="btn primario" data-siguiente>Continuar →</button></div>
+        </section>
+
+        <!-- PASO 2: Causa -->
+        <section class="panel paso-panel" data-panel="2">
+          <div class="panel-titulo"><div><span class="numero-seccion">02</span><h2>Causa de terminación</h2><p>La causa determina la prestación principal aplicable.</p></div></div>
+          <div class="opciones-grandes">
+            <label class="opcion-radio"><input type="radio" name="tipoBaja" value="despido" checked><span><b>Despido injustificado</b><small>Indemnización del Art. 58 C.T.</small></span></label>
+            <label class="opcion-radio"><input type="radio" name="tipoBaja" value="renuncia"><span><b>Renuncia voluntaria</b><small>Prestación sujeta a requisitos de la Ley de Renuncia Voluntaria.</small></span></label>
+          </div>
+
+          <div id="bloqueRenuncia" class="subpanel oculto">
+            <h3>Requisitos de renuncia</h3>
+            <div class="grid-2">
+              <label class="campo"><span>¿Presentó preaviso escrito?</span>
+                <select id="dioPreaviso"><option value="si">Sí, cumplí el preaviso</option><option value="no">No</option></select>
+              </label>
+              <label class="campo"><span>Tipo de cargo para preaviso</span>
+                <select id="tipoCargo"><option value="general">Trabajador general · 15 días</option><option value="jefatura">Dirección / jefatura / especializado · 30 días</option></select>
+              </label>
+            </div>
+            <div id="avisoRenuncia" class="info-box"></div>
+          </div>
+
+          <div class="topes-card">
+            <div><span>Tope indemnización despido</span><b>4 × salario mínimo del sector</b></div>
+            <div><span>Tope renuncia (fuente adjunta)</span><b>2 × salario mínimo del sector</b></div>
+          </div>
+          <div class="info-box advertencia"><strong>Importante:</strong> el documento de fórmulas adjunto establece para renuncia un tope de <b>dos salarios mínimos</b>; por eso se implementa así, aunque la especificación solicitada mencione cuatro. El tope de cuatro salarios mínimos sí se aplica al Art. 58 en el cálculo de despido.</div>
+          <div class="acciones"><button type="button" class="btn secundario" data-anterior>← Atrás</button><button type="button" class="btn primario" data-siguiente>Continuar →</button></div>
+        </section>
+
+        <!-- PASO 3: Periodo -->
+        <section class="panel paso-panel" data-panel="3">
+          <div class="panel-titulo"><div><span class="numero-seccion">03</span><h2>Periodo de labor</h2><p>Usa fechas calendario; la liquidación emplea referencias comerciales de 30/360 cuando corresponde.</p></div></div>
+          <div class="grid-2">
+            <label class="campo"><span>Fecha de inicio</span><input id="fechaInicio" type="date"></label>
+            <label class="campo"><span>Fecha de finalización</span><input id="fechaFin" type="date"></label>
+          </div>
+          <div class="antiguedad-card">
+            <span>Antigüedad reconocida</span>
+            <strong id="antiguedadTexto">—</strong>
+            <small id="antiguedadDetalle">Selecciona las dos fechas.</small>
+          </div>
+          <div class="info-box advertencia"><strong>Nota de cálculo:</strong> para indemnizaciones proporcionales se utiliza el año comercial de 360 días y meses de 30 días, según el material de fórmulas proporcionado.</div>
+          <div class="acciones"><button type="button" class="btn secundario" data-anterior>← Atrás</button><button type="button" class="btn primario" data-siguiente>Continuar →</button></div>
+        </section>
+
+        <!-- PASO 4: Jornadas especiales -->
+        <section class="panel paso-panel" data-panel="4">
+          <div class="panel-titulo"><div><span class="numero-seccion">04</span><h2>Asuetos y descanso semanal</h2><p>Registra fechas realmente laboradas para evitar duplicidades.</p></div></div>
+
+          <div class="pregunta-card">
+            <div><div><b>¿Laboró en días de asueto?</b><small>Se remunera con SBD × 2.</small></div>
+              <div class="segmented"><label><input type="radio" name="trabajoAsueto" value="no" checked><span>No</span></label><label><input type="radio" name="trabajoAsueto" value="si"><span>Sí</span></label></div>
+            </div>
+          </div>
+          <div id="bloqueAsuetos" class="subpanel oculto">
+            <div class="lista-cabecera"><h3>Seleccione los asuetos laborados</h3><span id="contadorAsuetos">0 seleccionados</span></div>
+            <div id="listaAsuetos" class="lista-checks"></div>
+          </div>
+
+          <div class="pregunta-card">
+            <div><div><b>Día de descanso semanal</b><small>Jornada ordinaria de referencia: 8 h diarias y 44 h semanales.</small></div>
+              <select id="diaDescanso"><option value="domingo">Domingo</option><option value="lunes">Lunes</option><option value="martes">Martes</option><option value="miercoles">Miércoles</option><option value="jueves">Jueves</option><option value="viernes">Viernes</option><option value="sabado">Sábado</option></select>
+            </div>
+          </div>
+          <div class="pregunta-card">
+            <div><div><b>¿Laboró en su día de descanso?</b><small>Recargo mínimo del 50%; si coincide con asueto, prevalece asueto.</small></div>
+              <div class="segmented"><label><input type="radio" name="trabajoDescanso" value="no" checked><span>No</span></label><label><input type="radio" name="trabajoDescanso" value="si"><span>Sí</span></label></div>
+            </div>
+          </div>
+          <div id="bloqueDescanso" class="subpanel oculto">
+            <div class="lista-cabecera"><h3>Fechas laboradas en descanso semanal</h3><button type="button" class="btn mini" id="agregarDescanso">+ Agregar fecha</button></div>
+            <div id="fechasDescanso" class="filas-dinamicas"></div>
+            <p class="ayuda">Si una fecha también está marcada como asueto, el sistema aplica la remuneración de asueto y no suma nuevamente el recargo de descanso.</p>
+          </div>
+
+          <div class="acciones"><button type="button" class="btn secundario" data-anterior>← Atrás</button><button type="button" class="btn primario" data-siguiente>Continuar →</button></div>
+        </section>
+
+        <!-- PASO 5: Vacaciones y aguinaldo -->
+        <section class="panel paso-panel" data-panel="5">
+          <div class="panel-titulo"><div><span class="numero-seccion">05</span><h2>Vacaciones y aguinaldo</h2><p>Calcula el período vacacional y la prima de aguinaldo proporcional o completa.</p></div></div>
+
+          <div class="subpanel">
+            <h3>Vacaciones</h3>
+            <div class="grid-2">
+              <label class="campo"><span>Modalidad</span><select id="modalidadVacaciones"><option value="proporcional">Proporcional</option><option value="completa">15 días completos</option></select></label>
+              <label class="campo"><span>¿Empresa proporcionaba alojamiento?</span><select id="alojamiento"><option value="no">No</option><option value="si">Sí, no pudo gozarse durante vacaciones</option></select></label>
+              <label class="campo"><span>¿Empresa proporcionaba alimentación?</span><select id="alimentacion"><option value="no">No</option><option value="si">Sí, no pudo gozarse durante vacaciones</option></select></label>
+              <label class="campo"><span>Días vacacionales reconocidos</span><input id="diasVacaciones" type="number" min="0" max="15" step="0.01" value="15"></label>
+              <label class="campo"><span>Inicio del período de disfrute (opcional)</span><input id="inicioVacaciones" type="date"></label>
+              <label class="campo"><span>Fin del período de disfrute (opcional)</span><input id="finVacaciones" type="date"></label>
+            </div>
+            <div class="formula-chip">RV = SBD × días de vacación × 1.30 + 25% por alojamiento + 25% por alimentación, cuando corresponda.</div>
+          </div>
+
+          <div class="subpanel">
+            <h3>Aguinaldo</h3>
+            <label class="check-line">
+              <input id="aguinaldoPagadoEsteAnio" type="checkbox">
+              <span>Ya me pagaron el aguinaldo de este año (12 de diciembre)</span>
+            </label>
+            <div class="texto-ayuda">Si no está marcado, se toma como último pago el 12 de diciembre del año anterior.</div>
+            <div class="aguinaldo-info" id="categoriaAguinaldo">Categoría: —</div>
+          </div>
+
+
+          <div class="acciones"><button type="button" class="btn secundario" data-anterior>← Atrás</button><button type="button" class="btn primario" data-siguiente>Continuar →</button></div>
+        </section>
+
+        <!-- PASO 6: Horas extras -->
+        <section class="panel paso-panel" data-panel="6">
+          <div class="panel-titulo"><div><span class="numero-seccion">06</span><h2>Horas extras</h2><p>Registra uno o más intervalos; se clasifica automáticamente según los horarios legales.</p></div></div>
+          <div class="info-box">Diurna: 06:00–19:00 · Nocturna: 19:00–06:00 · Si la parte nocturna de una jornada mixta excede 3 horas, se considera nocturna en su totalidad. La hora nocturna ordinaria usa ×1.25 y la hora extra usa ×2 sobre la tarifa aplicable.</div>
+          <div class="lista-cabecera"><h3>Intervalos de horas extras</h3><button type="button" class="btn mini" id="agregarHoraExtra">+ Agregar intervalo</button></div>
+          <div id="horasExtras" class="tabla-dinamica">
+            <div class="tabla-head"><span>Fecha</span><span>Inicio</span><span>Fin</span><span>Horas</span><span>Clasificación</span><span>Monto</span><span></span></div>
+          </div>
+          <div class="acciones"><button type="button" class="btn secundario" data-anterior>← Atrás</button><button type="button" class="btn primario" id="btnCalcular">Calcular liquidación →</button></div>
+        </section>
+
+        <!-- PASO 7: Resultado -->
+        <section class="panel paso-panel" data-panel="7">
+          <div class="panel-titulo"><div><span class="numero-seccion">07</span><h2>Resultado</h2><p>Revisa el desglose y abre la visualización formal antes de exportar.</p></div></div>
+          <div id="resumenResultado" class="resultado-grid"></div>
+          <div class="totales">
+            <div><span>TOTAL 1 · Devengado bruto</span><strong id="totalBruto">$0.00</strong></div>
+            <div><span>Deducciones · ISSS + AFP</span><strong id="totalDeducciones">-$0.00</strong></div>
+            <div class="total-final"><span>TOTAL 2 · Neto a pagar</span><strong id="totalNeto">$0.00</strong></div>
+          </div>
+          <div class="acciones acciones-final"><button type="button" class="btn secundario" data-anterior>← Modificar</button><button type="button" class="btn primario" id="btnPrevisualizar">Previsualizar liquidación</button><button type="button" class="btn fantasma" id="btnLimpiar">Limpiar y comenzar de nuevo</button></div>
+        </section>
+      </form>
+    </section>
+  </main>
+
+  <!-- Modal de previsualización: reproduce la estructura del PDF modelo adjunto. -->
+  <div id="modalReporte" class="modal oculto" role="dialog" aria-modal="true" aria-labelledby="tituloModal">
+    <div class="modal-panel">
+      <div class="modal-barra"><div><b id="tituloModal">Visualización previa del reporte / liquidación</b><small>Documento informativo · No sustituye el finiquito legal</small></div><button id="cerrarModal" class="cerrar" aria-label="Cerrar">×</button></div>
+      <div class="modal-contenido">
+        <article id="documentoReporte" class="documento-reporte"></article>
+      </div>
+      <div class="modal-acciones"><button type="button" class="btn secundario" id="btnCerrarModal">Cerrar</button><button type="button" class="btn primario" id="btnExportarPdf">Exportar a PDF</button></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status"></div>
+</body>
+</html>
