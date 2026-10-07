@@ -328,7 +328,7 @@ function calcularAntiguedad(fechaInicio, fechaFin) {
       {fecha:`${anio}-06-17`, nombre:"17 de junio · Día del Padre", tipo:" Nacional"},
       {fecha:`${anio}-08-06`, nombre:"6 de agosto · Divino Salvador del Mundo", tipo:" Nacional"},
       {fecha:`${anio}-09-15`, nombre:"15 de septiembre · Independencia", tipo:" Nacional"},
-      {fecha:`${anio}-09-21`, nombre:"21 de septiembre · Fiesta patronal de San Miguel", tipo:" Local · San Miguel"},
+      {fecha:`${anio}-11-21`, nombre:"21 de noviembre · Fiesta patronal de San Miguel", tipo:" Local · San Miguel"},
       {fecha:`${anio}-11-02`, nombre:"2 de noviembre · Día de los Difuntos", tipo:" Nacional"},
       {fecha:`${anio}-12-25`, nombre:"25 de diciembre · Navidad", tipo:" Nacional"}
     ];
