@@ -425,7 +425,7 @@ function calcularAntiguedad(fechaInicio, fechaFin) {
     if (nocturnos / 60 > 3.5) return {tipo:"Mixta → nocturna", horasDiurnas:0, horasNocturnas:total/60};
     return {tipo:"Mixta", horasDiurnas:diurnos/60, horasNocturnas:nocturnos/60};
   }
-
+//modifique esto****
   function actualizarHorasExtra() {
     $$(".fila-hora").forEach(fila => {
       const inicio = fila.querySelector(".he-inicio").value;
