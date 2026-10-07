@@ -97,39 +97,6 @@
      Antigüedad: componentes calendario con días residuales
      expresados comercialmente (30 días).
      --------------------------------------------------------- */
- /* function calcularAntiguedad(fechaInicio, fechaFin) {
-    if (!fechaInicio || !fechaFin) return null;
-
-    const inicio = new Date(`${fechaInicio}T00:00:00`);
-    const fin = new Date(`${fechaFin}T00:00:00`);
-    if (fin < inicio) return null;
-
-    let anios = fin.getFullYear() - inicio.getFullYear();
-    let meses = fin.getMonth() - inicio.getMonth();
-    let dias = fin.getDate() - inicio.getDate();
-
-    if (dias < 0) {
-      meses -= 1;
-      // Para el residuo se usa el mes comercial de 30 días.
-      dias += 30;
-    }
-    if (meses < 0) {
-      anios -= 1;
-      meses += 12;
-    }
-
-    // Para una terminación exactamente el día de aniversario,
-    // el resultado es un número entero de años.
-    if (dias === 30) {
-      dias = 0;
-      meses += 1;
-      if (meses === 12) { meses = 0; anios += 1; }
-    }
-
-    const diasComerciales = anios * 360 + meses * 30 + dias;
-    return { anios, meses, dias, diasComerciales };
-  }
-*/
 function calcularAntiguedad(fechaInicio, fechaFin) {
   if (!fechaInicio || !fechaFin) return null;
 
@@ -328,7 +295,7 @@ function calcularAntiguedad(fechaInicio, fechaFin) {
       {fecha:`${anio}-06-17`, nombre:"17 de junio · Día del Padre", tipo:" Nacional"},
       {fecha:`${anio}-08-06`, nombre:"6 de agosto · Divino Salvador del Mundo", tipo:" Nacional"},
       {fecha:`${anio}-09-15`, nombre:"15 de septiembre · Independencia", tipo:" Nacional"},
-      {fecha:`${anio}-11-21`, nombre:"21 de noviembre · Fiesta patronal de San Miguel", tipo:" Local · San Miguel"},
+      {fecha:`${anio}-09-21`, nombre:"21 de septiembre · Fiesta patronal de San Miguel", tipo:" Local · San Miguel"},
       {fecha:`${anio}-11-02`, nombre:"2 de noviembre · Día de los Difuntos", tipo:" Nacional"},
       {fecha:`${anio}-12-25`, nombre:"25 de diciembre · Navidad", tipo:" Nacional"}
     ];
@@ -412,6 +379,8 @@ function calcularAntiguedad(fechaInicio, fechaFin) {
     if (b <= a) b += 1440;
 
     // Cuenta cuántos minutos caen dentro de la franja nocturna.
+    // Art. 161: la jornada mixta se considera nocturna si abarca 3.5 horas
+    // nocturnas o más (210 minutos).
     let nocturnos = 0;
     for (let minuto = a; minuto < b; minuto++) {
       const reloj = minuto % 1440;
@@ -422,10 +391,10 @@ function calcularAntiguedad(fechaInicio, fechaFin) {
 
     if (nocturnos === 0) return {tipo:"Diurna", horasDiurnas:total/60, horasNocturnas:0};
     if (diurnos === 0) return {tipo:"Nocturna", horasDiurnas:0, horasNocturnas:total/60};
-    if (nocturnos / 60 > 3.5) return {tipo:"Mixta → nocturna", horasDiurnas:0, horasNocturnas:total/60};
+    if (nocturnos >= 210) return {tipo:"Mixta → nocturna", horasDiurnas:0, horasNocturnas:total/60};
     return {tipo:"Mixta", horasDiurnas:diurnos/60, horasNocturnas:nocturnos/60};
   }
-//modifique esto****
+
   function actualizarHorasExtra() {
     $$(".fila-hora").forEach(fila => {
       const inicio = fila.querySelector(".he-inicio").value;
@@ -495,10 +464,15 @@ function calcularAntiguedad(fechaInicio, fechaFin) {
     const anioReferencia = Number(referencia.slice(0, 4));
     const pagoEsteAnio = $("aguinaldoPagadoEsteAnio").checked;
     const anioUltimoPago = pagoEsteAnio ? anioReferencia : anioReferencia - 1;
-    const ultimo = `${anioUltimoPago}-12-12`;
-    if (referencia < ultimo) return 0;
+    const ultimoPago = `${anioUltimoPago}-12-12`;
 
-    const dias = calcularDiasEntreFechasComerciales(ultimo, referencia);
+    // Si la persona ingresó después del último 12 de diciembre,
+    // el aguinaldo proporcional se cuenta desde su fecha de ingreso.
+    const fechaIngreso = $("fechaInicio").value;
+    const desde = fechaIngreso && fechaIngreso > ultimoPago ? fechaIngreso : ultimoPago;
+    if (referencia < desde) return 0;
+
+    const dias = calcularDiasEntreFechasComerciales(desde, referencia);
     // Si se completó el ciclo anual, se reconoce el aguinaldo completo.
     return Math.min(aguinaldoCompleto, (aguinaldoCompleto / 360) * dias);
   }
